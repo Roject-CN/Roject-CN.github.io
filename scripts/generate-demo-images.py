@@ -15,7 +15,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 ROOT = Path(__file__).resolve().parent.parent
 COVERS = ROOT / "public" / "images" / "covers"
 POSTS = ROOT / "public" / "images" / "posts"
-PHOTOS = ROOT / "src" / "assets" / "photos"
+PHOTOS = ROOT / "src" / "content" / "photos"
 PUBLIC = ROOT / "public" / "images"
 
 for folder in (COVERS, POSTS, PHOTOS, PUBLIC):
@@ -61,6 +61,7 @@ def to_image(arr: np.ndarray) -> Image.Image:
 
 
 def save(img: Image.Image, path: Path, quality: int = 82) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     img.convert("RGB").save(path, "JPEG", quality=quality, optimize=True, progressive=True)
     print(f"wrote {path.relative_to(ROOT)}  ({path.stat().st_size // 1024} KB)")
 
@@ -306,7 +307,7 @@ def photo_target() -> None:
         r1, r2 = 650, 668 if i % 5 else 680
         d.line([(cx + math.cos(angle) * r1, cy + math.sin(angle) * r1), (cx + math.cos(angle) * r2, cy + math.sin(angle) * r2)], fill=(200, 255, 61, 70), width=1)
     img = Image.alpha_composite(img, layer)
-    save(img, PHOTOS / "signal-01.jpg")
+    save(img, PHOTOS / "signal-01" / "signal-01.jpg")
 
 
 def photo_horizon() -> None:
@@ -325,7 +326,7 @@ def photo_horizon() -> None:
     d.arc([520, 250, 1080, 810], 200, 340, fill=(255, 92, 43, 80), width=2)
     d.text((80, 120), "HORIZON", font=font(FONT_MONO, 34), fill=(238, 235, 228, 55))
     img = Image.alpha_composite(img, layer)
-    save(img, PHOTOS / "signal-02.jpg")
+    save(img, PHOTOS / "signal-02" / "signal-02.jpg")
 
 
 def photo_orange() -> None:
@@ -345,7 +346,7 @@ def photo_orange() -> None:
     for i in range(8):
         d.rectangle([80, 980 + i * 18, 80 + 260 - i * 22, 988 + i * 18], fill=(238, 235, 228, 35))
     img = Image.alpha_composite(img, layer)
-    save(img, PHOTOS / "signal-03.jpg")
+    save(img, PHOTOS / "signal-03" / "signal-03.jpg")
 
 
 def photo_city() -> None:
@@ -370,7 +371,7 @@ def photo_city() -> None:
     d.line([(0, 880), (w, 880)], fill=(139, 92, 246, 80), width=1)
     d.text((50, 90), "VERTICAL / 2026", font=font(FONT_MONO, 26), fill=(238, 235, 228, 45))
     img = Image.alpha_composite(img, layer)
-    save(img, PHOTOS / "signal-04.jpg")
+    save(img, PHOTOS / "signal-04" / "signal-04.jpg")
 
 
 def photo_crosshair() -> None:
@@ -393,7 +394,7 @@ def photo_crosshair() -> None:
         d.line([(cx + math.cos(angle) * r1, cy + math.sin(angle) * r1), (cx + math.cos(angle) * r2, cy + math.sin(angle) * r2)], fill=(200, 255, 61, 80), width=1)
     spaced(d, (70, 70), "TARGET // LOCKED", font(FONT_MONO, 22), (200, 255, 61, 140), 2)
     img = Image.alpha_composite(img, layer)
-    save(img, PHOTOS / "signal-05.jpg")
+    save(img, PHOTOS / "signal-05" / "signal-05.jpg")
 
 
 def photo_noise() -> None:
@@ -416,7 +417,7 @@ def photo_noise() -> None:
     spaced(d, (80, 90), "NOISE // 06", font(FONT_MONO, 22), (200, 255, 61, 110), 2)
     d.text((80, h - 160), "SIGNAL LOST", font=font(FONT_LATIN_BOLD, 58), fill=(238, 235, 228, 30))
     img = Image.alpha_composite(img, layer)
-    save(img, PHOTOS / "signal-06.jpg")
+    save(img, PHOTOS / "signal-06" / "signal-06.jpg")
 
 
 def og_image() -> None:

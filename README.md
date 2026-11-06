@@ -1,6 +1,6 @@
 # Roject 的博客
 
-一个用 **Astro 5 + GitHub Pages** 搭建的静态个人博客。没有数据库、没有后台、没有追踪脚本，文章和图片都以文件形式保存在 Git 仓库里。
+一个用 **Astro 5 + GitHub Pages** 搭建的静态个人博客。没有数据库、没有服务器后端、没有追踪脚本，文章和图片都以文件形式保存在 Git 仓库里。附带一个基于 Git 的网页后台（Sveltia CMS），可以直接在浏览器里写文章、传图片。
 
 设计上借了《新世纪福音战士》的一点配色：紫黑底色、荧光绿信号、橙色警告。但阅读体验优先——排版、目录、图片和搜索都为长文服务。
 
@@ -35,6 +35,7 @@
 - 页面滚动显现等轻量动效
 
 **工程**
+- 内置 [Sveltia CMS](https://sveltiacms.app/) 网页后台：GitHub 登录或访问令牌登录，直接编辑文章、上传图片
 - 一条命令新建文章
 - GitHub Actions 自动构建并发布到 GitHub Pages
 - 支持「用户主页仓库」和「项目仓库」两种路径（自动处理 `base`）
@@ -54,6 +55,27 @@ npm run preview    # 本地预览构建结果
 ```
 
 > 本项目固定使用 Astro `5.16.16`，因为它在 Node 20 上最稳定。升级 Astro 大版本前请先看官方迁移指南。
+>
+> `npm run dev` 和 `npm run build` 前会自动把 Sveltia CMS 的静态资源同步到 `public/admin/`，不需要手动操作。
+
+---
+
+## 网页后台（推荐）
+
+线上地址：**https://roject-cn.github.io/admin/**
+
+第一次使用：
+
+1. 打开后台，点击 **「使用访问令牌登录」**
+2. 按对话框里的链接到 GitHub 生成一个 token
+   - 经典 token：勾选 `repo`（或只勾 `public_repo`）
+   - Fine-grained token：给这个仓库 **Contents: Read and write** 权限
+3. 把 token 粘贴进对话框，登录
+4. 在「文章 / 影像」里新建或编辑内容，点保存即可
+
+保存后 Sveltia CMS 会直接向 GitHub 提交 commit，GitHub Actions 自动重新构建，通常 1–2 分钟后线上更新。
+
+> token 保存在你自己浏览器的 localStorage 里，不会上传到博客。不要在公共电脑上勾选记住登录；使用完可以在后台退出登录。
 
 ---
 
@@ -64,9 +86,8 @@ Blog/
 ├─ src/
 │  ├─ config/site.ts          # 站点名称、署名、导航、社交链接
 │  ├─ content/blog/           # 文章（Markdown）
-│  ├─ content.config.ts       # 文章字段定义与校验
-│  ├─ assets/photos/          # 相册原图（构建时优化）
-│  ├─ data/photos.ts          # 相册元数据：标题、相册、图注
+│  ├─ content/photos/         # 相册：<slug>/index.md + 同目录图片
+│  ├─ content.config.ts       # 文章与相册字段定义、校验
 │  ├─ pages/                  # 路由
 │  │  ├─ index.astro          # 首页
 │  │  ├─ blog/                # 文章列表 + 详情
@@ -81,12 +102,14 @@ Blog/
 │  ├─ layouts/                # BaseLayout / PostLayout
 │  └─ styles/global.css       # 设计系统（颜色、字体、组件样式）
 ├─ public/
+│  ├─ admin/                  # Sveltia CMS 后台（index.html + config.yml）
 │  ├─ images/covers/          # 文章封面
 │  ├─ images/posts/           # 文章插图
 │  ├─ favicon.svg
 │  └─ og-default.jpg          # 默认社交分享图
 ├─ scripts/
 │  ├─ new-post.mjs            # 新建文章
+│  ├─ sync-sveltia.mjs        # 同步后台静态资源（dev/build 前自动执行）
 │  └─ generate-demo-images.py # 重新生成演示图片（可选）
 └─ .github/workflows/deploy.yml
 ```
@@ -95,7 +118,9 @@ Blog/
 
 ## 写一篇文章
 
-### 方式一：脚手架（推荐）
+日常写作直接用上面的网页后台。下面是命令行和手动方式，适合批量迁移或调试。
+
+### 方式一：脚手架
 
 ```bash
 npm run new -- "文章标题" my-post-slug
@@ -159,23 +184,35 @@ cover: /images/covers/my-cover.jpg
 
 ### 3. 相册
 
-相册图片放在 `src/assets/photos/`，然后在 `src/data/photos.ts` 里导入并追加一条记录：
+相册现在由网页后台管理，每张照片是一个独立文件夹：
 
-```ts
-import p7 from '../assets/photos/my-photo.jpg';
-
-// 在 photos 数组里追加：
-{
-  src: p7,
-  title: '江边的风',
-  alt: '夜晚江面上的灯光倒影',
-  album: '光影',          // 相同的 album 会自动归入同一个筛选
-  date: '2026.11',
-  caption: '风把水面吹皱，灯光碎成一片。',
-}
+```text
+src/content/photos/my-photo/
+├─ index.md
+└─ my-photo.jpg
 ```
 
-构建时会自动生成 400 / 800 / 1200px 多种尺寸的 WebP，并输出 `srcset`。原图建议长边 **2000px** 左右、sRGB、JPEG 质量 80。
+`index.md` 里写：
+
+```yaml
+---
+title: 江边的风
+alt: 夜晚江面上的灯光倒影
+album: 光影
+date: '2026.11'
+caption: 风把水面吹皱，灯光碎成一片。
+order: 7
+src: my-photo.jpg
+---
+```
+
+- `src` 是图片文件名，相对于这个 `index.md`
+- 相同的 `album` 会自动归入同一个筛选
+- `order` 越小越靠前
+- 构建时会自动生成 400 / 800 / 1200px 多种尺寸的 WebP，并输出 `srcset`
+- 原图建议长边 **2000px** 左右、sRGB、JPEG 质量 80
+
+在后台的「影像」里新建照片时，上传的图片会自动和 `index.md` 放在同一个文件夹，不需要手动搬文件。
 
 > 当前相册里的 6 张图是脚本生成的演示图，可以随时删除并替换成你自己的照片。
 

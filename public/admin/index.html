@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>写作后台 · Roject 的博客</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #08080b;
+      }
+      .admin-fallback {
+        display: grid;
+        place-items: center;
+        min-height: 100vh;
+        padding: 2rem;
+        color: #b7b2c2;
+        font-family: ui-monospace, Consolas, monospace;
+        font-size: 0.85rem;
+        text-align: center;
+      }
+      .admin-fallback strong {
+        display: block;
+        margin-bottom: 0.6rem;
+        color: #c8ff3d;
+        font-size: 1.1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <div class="admin-fallback">
+        <div><strong>需要启用 JavaScript</strong>写作后台是一个纯前端应用。</div>
+      </div>
+    </noscript>
+    <div id="sveltia-cms"></div>
+    <script src="./sveltia-cms.js"></script>
+  </body>
+</html>

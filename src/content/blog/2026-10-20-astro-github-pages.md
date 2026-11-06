@@ -88,7 +88,7 @@ jobs:
 
 ## 图片怎么处理
 
-文章里的插图放在 `public/images/posts/`，用普通 Markdown 图片语法引用；相册图片放在 `src/assets/photos/`，由 Astro 自动压缩并生成 `srcset`。前者简单直接，后者适合大图。
+文章里的插图放在 `public/images/posts/`，用普通 Markdown 图片语法引用；相册图片放在 `src/content/photos/` 的条目文件夹里，由 Astro 自动压缩并生成 `srcset`。前者简单直接，后者适合大图。
 
 具体流程写在《从相机到网页：我的照片工作流》里。
 

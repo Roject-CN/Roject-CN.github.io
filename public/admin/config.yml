@@ -1,0 +1,88 @@
+backend:
+  name: github
+  repo: Roject-CN/Roject-CN.github.io
+  branch: main
+
+site_url: https://roject-cn.github.io
+display_url: https://roject-cn.github.io
+logo:
+  src: /favicon.svg
+
+media_folder: public/images
+public_folder: /images
+
+output:
+  omit_empty_optional_fields: true
+
+collections:
+  - name: blog
+    label: 文章
+    label_singular: 文章
+    description: 博客文章（Markdown + frontmatter）
+    folder: src/content/blog
+    media_folder: /public/images/posts
+    public_folder: /images/posts
+    extension: md
+    format: frontmatter
+    slug: '{{year}}-{{month}}-{{day}}-{{slug}}'
+    identifier_field: title
+    summary: '{{title}} · {{date}}'
+    sortable_fields: [date, title]
+    fields:
+      - { name: title, label: 标题, widget: string }
+      - { name: description, label: 摘要, widget: text, hint: 会显示在列表、搜索结果和 SEO 描述里 }
+      - name: date
+        label: 发布日期
+        widget: datetime
+        date_format: 'YYYY-MM-DD'
+        time_format: false
+        format: 'YYYY-MM-DD'
+      - name: tags
+        label: 标签
+        widget: list
+        required: false
+        default: []
+        hint: 输入后按回车添加一个标签
+      - name: cover
+        label: 封面图
+        widget: image
+        required: false
+        media_folder: /public/images/covers
+        public_folder: /images/covers
+        hint: 建议 16:9，长边约 1600px
+      - { name: coverAlt, label: 封面说明, widget: string, required: false }
+      - { name: featured, label: 首页精选, widget: boolean, default: false }
+      - { name: pinned, label: 首页置顶, widget: boolean, default: false }
+      - { name: draft, label: 草稿（不发布）, widget: boolean, default: false }
+      - { name: body, label: 正文, widget: markdown }
+
+  - name: photos
+    label: 影像
+    label_singular: 照片
+    description: 相册照片（图片会和条目放在同一个文件夹里，Astro 会自动优化）
+    folder: src/content/photos
+    path: '{{slug}}/index'
+    nested:
+      depth: 2
+      subfolders: true
+    media_folder: ''
+    public_folder: ''
+    extension: md
+    format: frontmatter
+    slug: '{{uuid_short}}'
+    identifier_field: title
+    summary: '{{title}} · {{album}}'
+    sortable_fields: [order, title]
+    fields:
+      - { name: src, label: 图片, widget: image, hint: 上传后会保存在这条照片自己的文件夹里 }
+      - { name: title, label: 标题, widget: string }
+      - { name: alt, label: 替代文字, widget: string, hint: 描述画面内容，方便无障碍阅读 }
+      - { name: album, label: 相册, widget: string, hint: 相同相册名会自动归为一组 }
+      - { name: date, label: 日期, widget: string, hint: '例如 2026.10' }
+      - { name: caption, label: 图注, widget: text, required: false }
+      - name: order
+        label: 排序
+        widget: number
+        default: 0
+        value_type: int
+        hint: 数字越小越靠前

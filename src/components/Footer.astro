@@ -49,9 +49,8 @@ const years = year > siteConfig.since ? `${siteConfig.since}—${year}` : `${yea
         <div>
           <h2 class="site-footer__title">连接</h2>
           <ul>
-            <li>
-              <a href={siteConfig.github} target="_blank" rel="noopener noreferrer">GitHub ↗</a>
-            </li>
+            <li><a href={siteConfig.github} target="_blank" rel="noopener noreferrer">GitHub ↗</a></li>
+            <li><a href={withBase('/admin/')}>写作后台</a></li>
             <li><a href={withBase('/about/')}>关于这个站</a></li>
             <li><a href={withBase('/rss.xml')}>rss.xml</a></li>
           </ul>

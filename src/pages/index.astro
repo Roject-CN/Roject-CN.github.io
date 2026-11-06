@@ -5,11 +5,12 @@ import HeroCore from '../components/HeroCore.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import PostCard from '../components/PostCard.astro';
 import { collectTags, formatDate, getPublishedPosts } from '../lib/posts';
-import { photos } from '../data/photos';
+import { getPhotos } from '../lib/photos';
 import { withBase } from '../lib/url';
 import { siteConfig } from '../config/site';
 
 const posts = await getPublishedPosts();
+const photos = await getPhotos();
 const featured = posts.find((post) => post.data.pinned) ?? posts.find((post) => post.data.featured) ?? posts[0];
 const recent = posts.filter((post) => post.id !== featured?.id).slice(0, 2);
 const allTags = collectTags(posts);
@@ -99,17 +100,17 @@ const previewPhotos = photos.slice(0, 3);
       <div class="photo-strip">
         {
           previewPhotos.map((photo) => (
-            <a href={withBase('/photos/')} aria-label={`查看影像：${photo.title}`}>
+            <a href={withBase('/photos/')} aria-label={`查看影像：${photo.data.title}`}>
               <Image
-                src={photo.src}
-                alt={photo.alt}
+                src={photo.data.src}
+                alt={photo.data.alt}
                 widths={[400, 800]}
                 sizes="(max-width: 720px) 100vw, 33vw"
               />
               <span>
-                {photo.title}
+                {photo.data.title}
                 <i aria-hidden="true"> / </i>
-                {photo.album}
+                {photo.data.album}
               </span>
             </a>
           ))

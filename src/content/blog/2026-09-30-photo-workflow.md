@@ -66,18 +66,29 @@ EVA 配色看多了，很容易把所有照片都调成紫绿。但照片首先�
 ![夜晚的江面](/images/posts/2026-09-river-01.jpg)
 ```
 
-**相册图片**放在 `src/assets/photos/`，然后在 `src/data/photos.ts` 里追加一条记录。构建时 Astro 会自动生成多尺寸版本，手机上不会下载一张 4000px 的原图。
+**相册图片**在网页后台的「影像」里新建，图片会和 `index.md` 放在同一个文件夹：
 
-```ts
-{
-  src: p7,
-  title: '江边的风',
-  alt: '夜晚江面上的灯光倒影',
-  album: '光影',
-  date: '2026.09',
-  caption: '风把水面吹皱，灯光碎成一片。',
-}
+```text
+src/content/photos/my-photo/
+├─ index.md
+└─ my-photo.jpg
 ```
+
+`index.md` 里写：
+
+```yaml
+---
+title: 江边的风
+alt: 夜晚江面上的灯光倒影
+album: 光影
+date: '2026.09'
+caption: 风把水面吹皱，灯光碎成一片。
+order: 7
+src: my-photo.jpg
+---
+```
+
+构建时 Astro 会自动生成多尺寸版本，手机上不会下载一张 4000px 的原图。`order` 控制排序，相同的 `album` 会自动归入同一个筛选。
 
 ## 六、让照片在网页上好看
 

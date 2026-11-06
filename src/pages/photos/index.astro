@@ -1,8 +1,10 @@
 ---
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { albums, photos } from '../../data/photos';
+import { getAlbums, getPhotos } from '../../lib/photos';
 
+const photos = await getPhotos();
+const albums = getAlbums(photos);
 const total = photos.length;
 ---
 
@@ -49,30 +51,30 @@ const total = photos.length;
       <div class="photo-grid">
         {
           photos.map((photo, index) => (
-            <div class="photo-item" data-photo data-album={photo.album}>
+            <div class="photo-item" data-photo data-album={photo.data.album}>
               <button
                 class="photo-card"
                 type="button"
                 data-lightbox
-                data-src={photo.src.src}
-                data-title={photo.title}
-                data-alt={photo.alt}
-                data-caption={photo.caption}
-                data-album={photo.album}
-                data-date={photo.date}
-                aria-label={`放大查看：${photo.title}`}
+                data-src={photo.data.src.src}
+                data-title={photo.data.title}
+                data-alt={photo.data.alt}
+                data-caption={photo.data.caption}
+                data-album={photo.data.album}
+                data-date={photo.data.date}
+                aria-label={`放大查看：${photo.data.title}`}
               >
                 <Image
-                  src={photo.src}
-                  alt={photo.alt}
+                  src={photo.data.src}
+                  alt={photo.data.alt}
                   widths={[400, 800, 1200]}
                   sizes="(max-width: 520px) 100vw, (max-width: 720px) 50vw, 33vw"
                   loading={index < 3 ? 'eager' : 'lazy'}
                 />
                 <span class="photo-card__overlay">
-                  <span class="photo-card__title">{photo.title}</span>
+                  <span class="photo-card__title">{photo.data.title}</span>
                   <span class="photo-card__meta">
-                    {photo.album} / {photo.date}
+                    {photo.data.album} / {photo.data.date}
                   </span>
                 </span>
               </button>

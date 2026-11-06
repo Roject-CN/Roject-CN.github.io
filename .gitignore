@@ -25,3 +25,8 @@ Thumbs.db
 # misc
 *.pem
 qa/
+
+# generated Sveltia CMS assets (copied from node_modules before dev/build)
+public/admin/sveltia-cms.js
+public/admin/chunks/
+public/admin/locales/
