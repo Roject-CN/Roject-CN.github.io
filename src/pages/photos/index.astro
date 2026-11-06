@@ -1,0 +1,205 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { albums, photos } from '../../data/photos';
+
+const total = photos.length;
+---
+
+<BaseLayout
+  title="影像"
+  description="一个不限于文章的影像角落：实验影像、光影、结构与噪声。点击任意图片可以放大浏览。"
+>
+  <header class="page-head">
+    <div class="shell page-head__inner">
+      <p class="eyebrow">
+        <span class="status-dot"></span>
+        VISUAL FIELD NOTES // GALLERY
+      </p>
+      <h1>影像</h1>
+      <p class="page-head__desc">
+        照片是另一种笔记。这里收集光线、结构、噪声与偶然的瞬间，也存放文章里放不下的画面。
+      </p>
+      <div class="page-head__meta">
+        <span><b data-photo-count>{String(total).padStart(2, '0')}</b> 帧</span>
+        <span>{albums.length} 个相册</span>
+        <a href="#gallery">直接开始浏览 ↓</a>
+      </div>
+    </div>
+  </header>
+
+  <section id="gallery">
+    <div class="shell">
+      <div class="photo-toolbar">
+        <div class="photo-filters" role="group" aria-label="按相册筛选">
+          <button class="photo-filter" type="button" data-album-filter data-album="all" aria-pressed="true">
+            全部
+          </button>
+          {
+            albums.map((album) => (
+              <button class="photo-filter" type="button" data-album-filter data-album={album} aria-pressed="false">
+                {album}
+              </button>
+            ))
+          }
+        </div>
+        <p class="photo-count"><b data-photo-count>{String(total).padStart(2, '0')}</b> FRAMES</p>
+      </div>
+
+      <div class="photo-grid">
+        {
+          photos.map((photo, index) => (
+            <div class="photo-item" data-photo data-album={photo.album}>
+              <button
+                class="photo-card"
+                type="button"
+                data-lightbox
+                data-src={photo.src.src}
+                data-title={photo.title}
+                data-alt={photo.alt}
+                data-caption={photo.caption}
+                data-album={photo.album}
+                data-date={photo.date}
+                aria-label={`放大查看：${photo.title}`}
+              >
+                <Image
+                  src={photo.src}
+                  alt={photo.alt}
+                  widths={[400, 800, 1200]}
+                  sizes="(max-width: 520px) 100vw, (max-width: 720px) 50vw, 33vw"
+                  loading={index < 3 ? 'eager' : 'lazy'}
+                />
+                <span class="photo-card__overlay">
+                  <span class="photo-card__title">{photo.title}</span>
+                  <span class="photo-card__meta">
+                    {photo.album} / {photo.date}
+                  </span>
+                </span>
+              </button>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <dialog class="lightbox" data-lightbox-dialog aria-label="影像查看器">
+    <button class="lightbox__btn lightbox__close" type="button" data-lightbox-close aria-label="关闭">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M5 5l14 14M19 5 5 19"></path>
+      </svg>
+    </button>
+    <div class="lightbox__stage">
+      <img class="lightbox__img" data-lightbox-img alt="" />
+    </div>
+    <div class="lightbox__bar">
+      <div class="lightbox__caption">
+        <span data-lightbox-title></span>
+        <small data-lightbox-meta></small>
+      </div>
+      <div class="lightbox__controls">
+        <span class="photo-count" data-lightbox-index></span>
+        <button class="lightbox__btn" type="button" data-lightbox-prev aria-label="上一张">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M15 5l-7 7 7 7"></path>
+          </svg>
+        </button>
+        <button class="lightbox__btn" type="button" data-lightbox-next aria-label="下一张">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </dialog>
+</BaseLayout>
+
+<script>
+  const items = [...document.querySelectorAll<HTMLElement>('[data-photo]')];
+  const cards = [...document.querySelectorAll<HTMLButtonElement>('[data-lightbox]')];
+  const filters = [...document.querySelectorAll<HTMLButtonElement>('[data-album-filter]')];
+  const counters = [...document.querySelectorAll<HTMLElement>('[data-photo-count]')];
+
+  const dialog = document.querySelector<HTMLDialogElement>('[data-lightbox-dialog]');
+  const imageEl = dialog?.querySelector<HTMLImageElement>('[data-lightbox-img]');
+  const titleEl = dialog?.querySelector<HTMLElement>('[data-lightbox-title]');
+  const metaEl = dialog?.querySelector<HTMLElement>('[data-lightbox-meta]');
+  const indexEl = dialog?.querySelector<HTMLElement>('[data-lightbox-index]');
+
+  const visibleCards = () => cards.filter((card) => !card.closest<HTMLElement>('[data-photo]')?.hidden);
+  let current = 0;
+
+  const updateLightbox = () => {
+    const list = visibleCards();
+    const card = list[current];
+    if (!card || !imageEl) return;
+
+    imageEl.src = card.dataset.src ?? '';
+    imageEl.alt = card.dataset.alt ?? '';
+    if (titleEl) titleEl.textContent = card.dataset.title ?? '';
+    if (metaEl) metaEl.textContent = `${card.dataset.album ?? ''} // ${card.dataset.date ?? ''}`;
+    if (indexEl) {
+      indexEl.textContent = `${String(current + 1).padStart(2, '0')} / ${String(list.length).padStart(2, '0')}`;
+    }
+  };
+
+  const openLightbox = (card: HTMLButtonElement) => {
+    const list = visibleCards();
+    current = Math.max(0, list.indexOf(card));
+    updateLightbox();
+    if (dialog && !dialog.open) dialog.showModal();
+  };
+
+  cards.forEach((card) => {
+    card.addEventListener('click', () => openLightbox(card));
+  });
+
+  filters.forEach((filter) => {
+    filter.addEventListener('click', () => {
+      const album = filter.dataset.album ?? 'all';
+      filters.forEach((button) => button.setAttribute('aria-pressed', String(button === filter)));
+
+      let count = 0;
+      for (const item of items) {
+        const show = album === 'all' || item.dataset.album === album;
+        item.hidden = !show;
+        if (show) count += 1;
+      }
+
+      counters.forEach((counter) => {
+        counter.textContent = String(count).padStart(2, '0');
+      });
+    });
+  });
+
+  dialog?.querySelector('[data-lightbox-close]')?.addEventListener('click', () => dialog.close());
+  dialog?.querySelector('[data-lightbox-prev]')?.addEventListener('click', () => {
+    const list = visibleCards();
+    current = (current - 1 + list.length) % list.length;
+    updateLightbox();
+  });
+  dialog?.querySelector('[data-lightbox-next]')?.addEventListener('click', () => {
+    const list = visibleCards();
+    current = (current + 1) % list.length;
+    updateLightbox();
+  });
+
+  dialog?.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      const list = visibleCards();
+      current = (current - 1 + list.length) % list.length;
+      updateLightbox();
+    }
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      const list = visibleCards();
+      current = (current + 1) % list.length;
+      updateLightbox();
+    }
+  });
+
+  dialog?.addEventListener('click', (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+</script>

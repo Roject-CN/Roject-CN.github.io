@@ -1,0 +1,155 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroCore from '../components/HeroCore.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import PostCard from '../components/PostCard.astro';
+import { collectTags, formatDate, getPublishedPosts } from '../lib/posts';
+import { photos } from '../data/photos';
+import { withBase } from '../lib/url';
+import { siteConfig } from '../config/site';
+
+const posts = await getPublishedPosts();
+const featured = posts.find((post) => post.data.pinned) ?? posts.find((post) => post.data.featured) ?? posts[0];
+const recent = posts.filter((post) => post.id !== featured?.id).slice(0, 2);
+const allTags = collectTags(posts);
+const tags = allTags.slice(0, 10);
+const latest = posts[0];
+const previewPhotos = photos.slice(0, 3);
+---
+
+<BaseLayout>
+  <section class="hero">
+    <div class="shell hero__inner">
+      <div class="hero__text">
+        <p class="eyebrow">
+          <span class="status-dot"></span>
+          SIGNAL ACQUIRED // PERSONAL ARCHIVE
+        </p>
+        <h1>在噪声中，<br /><em>保持清醒</em>的记录。</h1>
+        <p class="hero__lede">
+          这里存放我的学习笔记、技术试验、影像碎片与社会观察。写作是反抗遗忘的方式，也是把混乱整理成线索的过程。
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href={withBase('/blog/')}>
+            开始阅读
+            <span aria-hidden="true">→</span>
+          </a>
+          <a class="btn btn--ghost" href={withBase('/photos/')}>浏览影像</a>
+        </div>
+
+        <dl class="hero__stats">
+          <div class="hero__stat">
+            <dt>Transmissions</dt>
+            <dd>{posts.length}<small> 篇</small></dd>
+          </div>
+          <div class="hero__stat">
+            <dt>Frames</dt>
+            <dd>{photos.length}<small> 帧</small></dd>
+          </div>
+          <div class="hero__stat">
+            <dt>Tags</dt>
+            <dd>{allTags.length}<small> 个</small></dd>
+          </div>
+          <div class="hero__stat">
+            <dt>Last Update</dt>
+            <dd class="is-date">{latest ? formatDate(latest.data.date) : '—'}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <HeroCore />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="shell">
+      <SectionHeading
+        index="01"
+        eyebrow="LATEST TRANSMISSION"
+        title="最近在写"
+        href="/blog/"
+        linkLabel="全部文章"
+      />
+
+      <div class="post-grid">
+        {featured && <PostCard post={featured} index={1} large priority />}
+        {recent.map((post, index) => <PostCard post={post} index={index + 2} />)}
+      </div>
+
+      <div class="section__foot">
+        <a class="btn btn--ghost" href={withBase('/blog/')}>
+          查看全部 {posts.length} 篇
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="shell">
+      <SectionHeading
+        index="02"
+        eyebrow="VISUAL FIELD NOTES"
+        title="影像切片"
+        href="/photos/"
+        linkLabel="进入影像库"
+      />
+
+      <div class="photo-strip">
+        {
+          previewPhotos.map((photo) => (
+            <a href={withBase('/photos/')} aria-label={`查看影像：${photo.title}`}>
+              <Image
+                src={photo.src}
+                alt={photo.alt}
+                widths={[400, 800]}
+                sizes="(max-width: 720px) 100vw, 33vw"
+              />
+              <span>
+                {photo.title}
+                <i aria-hidden="true"> / </i>
+                {photo.album}
+              </span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="shell home-about">
+      <div>
+        <p class="eyebrow">ABOUT THIS ARCHIVE</p>
+        <h2>一个不追热点的<br />个人缓冲区。</h2>
+        <p>
+          这里没有算法推荐，也没有更新 KPI。只有读过的书、写过的代码、按下的快门，以及那些值得多想一步的问题。
+          如果某篇文章对你有用，欢迎通过 RSS 订阅，或到 GitHub 找我。
+        </p>
+        <a class="btn btn--ghost" href={withBase('/about/')}>
+          关于我
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <div class="home-tags">
+        <p class="eyebrow">INDEX // TAGS</p>
+        <div class="tag-cloud">
+          {
+            tags.map((tag) => (
+              <a href={withBase(`/tags/${encodeURIComponent(tag.name)}/`)}>
+                #{tag.name}
+                <span>{tag.count}</span>
+              </a>
+            ))
+          }
+        </div>
+        <a class="section-head__link" href={withBase('/tags/')}>
+          全部标签
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

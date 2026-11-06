@@ -1,0 +1,72 @@
+---
+import { currentPath, withBase } from '../lib/url';
+import { siteConfig } from '../config/site';
+
+const path = currentPath(Astro.url.pathname);
+const isActive = (href: string) => {
+  const target = href.replace(/\/+$/, '') || '/';
+  const here = path.replace(/\/+$/, '') || '/';
+  return here === target || here.startsWith(`${target}/`);
+};
+const year = new Date().getFullYear();
+const years = year > siteConfig.since ? `${siteConfig.since}—${year}` : `${year}`;
+---
+
+<footer class="site-footer">
+  <div class="site-footer__stripe" aria-hidden="true"></div>
+  <div class="shell">
+    <div class="site-footer__main">
+      <div class="site-footer__brand">
+        <p class="eyebrow">END OF TRANSMISSION</p>
+        <p class="site-footer__wordmark" aria-hidden="true">{siteConfig.shortTitle}</p>
+        <p class="site-footer__tagline">{siteConfig.tagline}</p>
+      </div>
+
+      <div class="site-footer__cols">
+        <div>
+          <h2 class="site-footer__title">导航</h2>
+          <ul>
+            {
+              siteConfig.nav.map((item) => (
+                <li>
+                  <a href={withBase(item.href)} aria-current={isActive(item.href) ? 'page' : undefined}>
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+            <li><a href={withBase('/search/')}>搜索</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="site-footer__title">订阅</h2>
+          <ul>
+            <li><a href={withBase('/rss.xml')}>RSS 订阅</a></li>
+            <li><a href={withBase('/archive/')}>全部归档</a></li>
+            <li><a href={withBase('/tags/')}>标签索引</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2 class="site-footer__title">连接</h2>
+          <ul>
+            <li>
+              <a href={siteConfig.github} target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            </li>
+            <li><a href={withBase('/about/')}>关于这个站</a></li>
+            <li><a href={withBase('/rss.xml')}>rss.xml</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="site-footer__bottom">
+      <p>© {years} {siteConfig.author}. 保留所有权利。</p>
+      <p class="site-footer__meta">
+        <span>BUILT WITH ASTRO</span>
+        <span class="site-footer__dot" aria-hidden="true"></span>
+        <span>HOSTED ON GITHUB PAGES</span>
+      </p>
+      <a class="site-footer__top" href="#top">回到顶部 ↑</a>
+    </div>
+  </div>
+</footer>

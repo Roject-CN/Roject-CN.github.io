@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getPublishedPosts } from '../../lib/posts';
+import { withBase } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  const tags = [...new Set(posts.flatMap((post) => post.data.tags))];
+
+  return tags.map((tag) => ({
+    params: { tag },
+    props: {
+      tag,
+      posts: posts.filter((post) => post.data.tags.includes(tag)),
+    },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout title={`#${tag}`} description={`标签「${tag}」下的全部文章，共 ${posts.length} 篇。`}>
+  <header class="page-head">
+    <div class="shell page-head__inner">
+      <p class="eyebrow">
+        <span class="status-dot"></span>
+        INDEX // TAG
+      </p>
+      <h1>#{tag}</h1>
+      <p class="page-head__desc">该标签下共有 {posts.length} 篇文章。</p>
+      <div class="page-head__meta">
+        <a href={withBase('/tags/')}>← 返回标签索引</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="blog-page">
+    <div class="shell">
+      <div class="post-grid">
+        {posts.map((post, index) => <PostCard post={post} index={index + 1} large={index === 0} />)}
+      </div>
+    </div>
+  </section>
+</BaseLayout>

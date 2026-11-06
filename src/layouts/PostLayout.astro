@@ -1,0 +1,273 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import TagList from '../components/TagList.astro';
+import PostCard from '../components/PostCard.astro';
+import { absoluteUrl, withBase } from '../lib/url';
+import { formatDate, isoDate, readingTime, type Post } from '../lib/posts';
+import { siteConfig } from '../config/site';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  headings: Heading[];
+  related: Post[];
+  newer?: Post;
+  older?: Post;
+}
+
+const { post, headings, related, newer, older } = Astro.props;
+const minutes = readingTime(post.body ?? '');
+const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+const published = isoDate(post.data.date);
+const updated = post.data.updated ? isoDate(post.data.updated) : published;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).href;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: published,
+  dateModified: updated,
+  author: { '@type': 'Person', name: siteConfig.author, url: siteConfig.github },
+  publisher: { '@type': 'Person', name: siteConfig.author },
+  image: post.data.cover ? absoluteUrl(post.data.cover, Astro.site) : undefined,
+  mainEntityOfPage: canonical,
+  inLanguage: siteConfig.lang,
+  keywords: post.data.tags.join(', '),
+};
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  image={post.data.cover}
+  type="article"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <div class="progress" aria-hidden="true"><span class="progress__bar" data-progress></span></div>
+
+  <article class="post">
+    <header class="post-hero">
+      <div class="shell post-hero__inner">
+        <nav class="breadcrumb" aria-label="面包屑">
+          <a href={withBase('/')}>首页</a>
+          <span aria-hidden="true">/</span>
+          <a href={withBase('/blog/')}>文章</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">{post.data.title}</span>
+        </nav>
+
+        <p class="eyebrow">
+          <span class="status-dot"></span>
+          TRANSMISSION // {post.id.toUpperCase()}
+        </p>
+
+        <h1 class="post-hero__title">{post.data.title}</h1>
+        <p class="post-hero__desc">{post.data.description}</p>
+
+        <div class="post-hero__meta">
+          <time datetime={published}>{formatDate(post.data.date)}</time>
+          <span aria-hidden="true">/</span>
+          <span>{minutes} MIN READ</span>
+          {post.data.updated && (
+            <>
+              <span aria-hidden="true">/</span>
+              <span>更新于 {formatDate(post.data.updated)}</span>
+            </>
+          )}
+        </div>
+      </div>
+    </header>
+
+    {
+      post.data.cover && (
+        <figure class="post-cover shell">
+          <div class="post-cover__frame">
+            <img
+              src={withBase(post.data.cover)}
+              alt={post.data.coverAlt ?? post.data.title}
+              width="1600"
+              height="900"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+          {post.data.coverAlt && <figcaption>{post.data.coverAlt}</figcaption>}
+        </figure>
+      )
+    }
+
+    <div class="shell post-layout">
+      <div class="post-main">
+        {
+          toc.length > 0 && (
+            <details class="toc-mobile">
+              <summary>目录 / CONTENTS</summary>
+              <ol>
+                {toc.map((heading) => (
+                  <li class:list={{ 'is-sub': heading.depth === 3 }}>
+                    <a href={`#${heading.slug}`}>{heading.text}</a>
+                  </li>
+                ))}
+              </ol>
+            </details>
+          )
+        }
+
+        <div class="prose">
+          <slot />
+        </div>
+
+        <div class="post-end" aria-hidden="true">
+          <span></span>
+          <b>END OF TRANSMISSION</b>
+          <span></span>
+        </div>
+
+        <div class="post-foot">
+          <TagList tags={post.data.tags} />
+          <button class="btn btn--ghost" type="button" data-copy-link>
+            <span data-copy-label>复制本文链接</span>
+          </button>
+        </div>
+
+        <nav class="post-nav" aria-label="相邻文章">
+          {
+            newer ? (
+              <a class="post-nav__item" href={withBase(`/blog/${newer.id}/`)}>
+                <span class="post-nav__label">← 更新一篇</span>
+                <strong>{newer.data.title}</strong>
+              </a>
+            ) : (
+              <span class="post-nav__item post-nav__item--empty" aria-hidden="true"></span>
+            )
+          }
+          {
+            older ? (
+              <a class="post-nav__item post-nav__item--next" href={withBase(`/blog/${older.id}/`)}>
+                <span class="post-nav__label">更早一篇 →</span>
+                <strong>{older.data.title}</strong>
+              </a>
+            ) : (
+              <span class="post-nav__item post-nav__item--empty" aria-hidden="true"></span>
+            )
+          }
+        </nav>
+      </div>
+
+      {
+        toc.length > 0 && (
+          <aside class="post-aside">
+            <nav class="toc" aria-label="本文目录">
+              <p class="toc__title">CONTENTS</p>
+              <ol>
+                {toc.map((heading) => (
+                  <li class:list={{ 'toc__item--sub': heading.depth === 3 }}>
+                    <a href={`#${heading.slug}`}>{heading.text}</a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+            <a class="post-aside__top" href="#top">回到顶部 ↑</a>
+          </aside>
+        )
+      }
+    </div>
+
+    {
+      related.length > 0 && (
+        <section class="shell related">
+          <div class="section-head">
+            <div class="section-head__title">
+              <span class="section-head__index" aria-hidden="true">NEXT</span>
+              <div>
+                <p class="eyebrow">RELATED TRANSMISSIONS</p>
+                <h2>继续阅读</h2>
+              </div>
+            </div>
+          </div>
+          <div class="post-grid">
+            {related.map((item, index) => <PostCard post={item} index={index + 1} />)}
+          </div>
+        </section>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<script>
+  const progress = document.querySelector<HTMLElement>('[data-progress]');
+  if (progress) {
+    const update = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const ratio = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+      progress.style.transform = `scaleX(${ratio})`;
+    };
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  }
+
+  document.querySelectorAll<HTMLElement>('.prose pre').forEach((pre) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'code-copy';
+    button.textContent = 'COPY';
+    button.setAttribute('aria-label', '复制代码');
+    button.addEventListener('click', async () => {
+      const code = pre.querySelector('code')?.innerText ?? '';
+      try {
+        await navigator.clipboard.writeText(code);
+        button.textContent = 'COPIED';
+      } catch {
+        button.textContent = 'FAILED';
+      }
+      window.setTimeout(() => {
+        button.textContent = 'COPY';
+      }, 1600);
+    });
+    pre.appendChild(button);
+  });
+
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.toc a')];
+  if (links.length > 0 && 'IntersectionObserver' in window) {
+    const byId = new Map(
+      links.map((link) => [decodeURIComponent(link.hash.replace(/^#/, '')), link] as const),
+    );
+    const spy = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          links.forEach((link) => link.classList.remove('is-active'));
+          byId.get(entry.target.id)?.classList.add('is-active');
+        }
+      },
+      { rootMargin: '-18% 0px -72% 0px', threshold: 0 },
+    );
+    document.querySelectorAll<HTMLElement>('.prose h2[id], .prose h3[id]').forEach((heading) => {
+      spy.observe(heading);
+    });
+  }
+
+  const copyButton = document.querySelector<HTMLButtonElement>('[data-copy-link]');
+  const copyLabel = copyButton?.querySelector<HTMLElement>('[data-copy-label]');
+  copyButton?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      if (copyLabel) copyLabel.textContent = '已复制链接';
+    } catch {
+      if (copyLabel) copyLabel.textContent = '复制失败，请手动复制';
+    }
+    window.setTimeout(() => {
+      if (copyLabel) copyLabel.textContent = '复制本文链接';
+    }, 2000);
+  });
+</script>

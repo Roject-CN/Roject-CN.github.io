@@ -1,0 +1,30 @@
+---
+import { withBase } from '../lib/url';
+
+interface Props {
+  index: string;
+  eyebrow: string;
+  title: string;
+  href?: string;
+  linkLabel?: string;
+}
+const { index, eyebrow, title, href, linkLabel = '查看全部' } = Astro.props;
+---
+
+<div class="section-head reveal">
+  <div class="section-head__title">
+    <span class="section-head__index" aria-hidden="true">{index}</span>
+    <div>
+      <p class="eyebrow">{eyebrow}</p>
+      <h2>{title}</h2>
+    </div>
+  </div>
+  {
+    href && (
+      <a class="section-head__link" href={withBase(href)}>
+        {linkLabel}
+        <span aria-hidden="true">→</span>
+      </a>
+    )
+  }
+</div>

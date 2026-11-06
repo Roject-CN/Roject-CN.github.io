@@ -1,0 +1,22 @@
+---
+import { withBase } from '../lib/url';
+
+interface Props {
+  tags: string[];
+  class?: string;
+}
+
+const { tags, class: className } = Astro.props;
+---
+
+<ul class:list={['tag-list', className]}>
+  {
+    tags.map((tag) => (
+      <li>
+        <a class="tag" href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>
+          <span aria-hidden="true">#</span>{tag}
+        </a>
+      </li>
+    ))
+  }
+</ul>

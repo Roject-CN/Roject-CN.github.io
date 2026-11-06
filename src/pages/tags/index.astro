@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { collectTags, getPublishedPosts } from '../../lib/posts';
+import { withBase } from '../../lib/url';
+
+const posts = await getPublishedPosts();
+const tags = collectTags(posts);
+---
+
+<BaseLayout title="标签" description="按标签浏览全部文章。">
+  <header class="page-head">
+    <div class="shell page-head__inner">
+      <p class="eyebrow">
+        <span class="status-dot"></span>
+        INDEX // TAXONOMY
+      </p>
+      <h1>标签</h1>
+      <p class="page-head__desc">共 {tags.length} 个标签。它们是这个档案室的抽屉，也是文章之间隐秘的连线。</p>
+    </div>
+  </header>
+
+  <section>
+    <div class="shell">
+      <div class="tag-cloud">
+        {
+          tags.map((tag) => (
+            <a href={withBase(`/tags/${encodeURIComponent(tag.name)}/`)}>
+              #{tag.name}
+              <span>{tag.count} 篇</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>

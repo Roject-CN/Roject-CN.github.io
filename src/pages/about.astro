@@ -1,0 +1,91 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteConfig } from '../config/site';
+import { withBase } from '../lib/url';
+---
+
+<BaseLayout
+  title="关于"
+  description="关于 Roject，以及这个用 Astro 和 GitHub Pages 搭建的个人博客。"
+>
+  <header class="page-head">
+    <div class="shell page-head__inner">
+      <p class="eyebrow">
+        <span class="status-dot"></span>
+        PERSONNEL FILE // 00
+      </p>
+      <h1>关于</h1>
+      <p class="page-head__desc">一个把阅读、代码与照片混在一起的人。这里是他公开的缓冲区。</p>
+    </div>
+  </header>
+
+  <section class="about">
+    <div class="shell about-grid">
+      <aside class="about-card">
+        <div class="about-card__avatar" aria-hidden="true">R</div>
+        <h2>{siteConfig.author}</h2>
+        <p class="about-card__role">Student / Writer / Photographer</p>
+        <dl class="about-card__meta">
+          <div>
+            <dt>STATUS</dt>
+            <dd>ONLINE</dd>
+          </div>
+          <div>
+            <dt>SINCE</dt>
+            <dd>{siteConfig.since}</dd>
+          </div>
+          <div>
+            <dt>LOCATION</dt>
+            <dd>CHINA</dd>
+          </div>
+          <div>
+            <dt>STACK</dt>
+            <dd>ASTRO / PAGES</dd>
+          </div>
+        </dl>
+      </aside>
+
+      <div class="about-body">
+        <div class="prose">
+          <h2>关于我</h2>
+          <p>
+            你好，我是 {siteConfig.author}。一个仍在学习如何提问、如何阅读、如何把想法写清楚的人。
+            目前关注的方向包括：学习与科研方法、编程与工具、影像表达，以及技术如何改变我们理解世界的方式。
+          </p>
+          <p>
+            我相信写作不是输出的终点，而是思考真正开始的地方。很多模糊的念头，只有在被迫写成句子的那一刻，
+            才会暴露它的漏洞。这个博客就是我的练习场。
+          </p>
+
+          <h2>这个站点</h2>
+          <p>
+            这里是一个完全静态的个人博客，使用 <a href="https://astro.build/" target="_blank" rel="noopener noreferrer">Astro</a>
+            构建，托管在 GitHub Pages 上。没有数据库，没有后台，也没有追踪脚本。文章是 Markdown 文件，
+            图片随仓库一起版本管理——简单、可迁移，二十年后大概还能打开。
+          </p>
+          <p>
+            设计上借了一点 EVA 的配色：紫黑、荧光绿、橙色的警告。但真正希望做到的，是让文字和照片安静地待在那里，
+            不抢你的注意力。
+          </p>
+
+          <h2>现在</h2>
+          <ul class="now-list">
+            <li><span>READING</span> 非虚构写作与认知科学，正在补一些迟到的课。</li>
+            <li><span>BUILDING</span> 这个博客，以及一些小而没用的工具。</li>
+            <li><span>LEARNING</span> 如何拍好一张不需要解释的照片。</li>
+            <li><span>THINKING</span> 注意力、信息噪声，以及个人如何在其中保持清醒。</li>
+          </ul>
+
+          <h2>联系</h2>
+          <p>
+            最直接的方式是在 <a href={siteConfig.github} target="_blank" rel="noopener noreferrer">GitHub</a> 找到我。
+            如果你也想订阅更新，可以使用 <a href={withBase('/rss.xml')}>RSS</a>——它比任何推荐算法都更尊重你的时间。
+          </p>
+          <blockquote>
+            <p>“写作是反抗遗忘的方式，也是把混乱整理成线索的过程。”</p>
+          </blockquote>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

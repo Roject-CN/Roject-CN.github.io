@@ -1,0 +1,110 @@
+---
+import { siteConfig } from '../config/site';
+import ThemeToggle from './ThemeToggle.astro';
+import { currentPath, withBase } from '../lib/url';
+
+const path = currentPath(Astro.url.pathname);
+const isActive = (href: string) => {
+  const target = href.replace(/\/+$/, '') || '/';
+  const here = path.replace(/\/+$/, '') || '/';
+  return here === target || here.startsWith(`${target}/`);
+};
+---
+
+<header class="site-header" data-header>
+  <div class="shell site-header__inner">
+    <a class="brand" href={withBase('/')} aria-label={`${siteConfig.title} 首页`}>
+      <span class="brand__mark" aria-hidden="true">
+        <span class="brand__letter">R</span>
+        <span class="brand__dot"></span>
+      </span>
+      <span class="brand__text">
+        <strong>{siteConfig.shortTitle}</strong>
+        <small>{siteConfig.subtitle}</small>
+      </span>
+    </a>
+
+    <nav class="site-nav" aria-label="主导航">
+      <ul>
+        {
+          siteConfig.nav.map((item) => (
+            <li>
+              <a
+                class:list={['site-nav__link', { 'is-active': isActive(item.href) }]}
+                href={withBase(item.href)}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+              >
+                <span class="site-nav__index">{item.index}</span>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <a class="icon-btn" href={withBase('/search/')} aria-label="搜索文章" title="搜索 (按 /)">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m16.5 16.5 4 4"></path>
+        </svg>
+      </a>
+      <ThemeToggle />
+      <button class="icon-btn menu-toggle" type="button" data-menu-toggle aria-label="打开菜单" aria-expanded="false" aria-controls="mobile-nav">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-nav" id="mobile-nav" data-mobile-nav>
+    <nav aria-label="移动端导航">
+      <ul>
+        {
+          siteConfig.nav.map((item) => (
+            <li>
+              <a href={withBase(item.href)} class:list={{ 'is-active': isActive(item.href) }}>
+                <span class="site-nav__index">{item.index}</span>
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a href={withBase('/search/')}><span class="site-nav__index">05</span>搜索</a>
+        </li>
+      </ul>
+    </nav>
+    <div class="mobile-nav__foot">
+      <a href={withBase('/rss.xml')}>RSS 订阅</a>
+      <a href={siteConfig.github} target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+    </div>
+  </div>
+</header>
+
+<script>
+  const menuToggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const mobileNav = document.querySelector<HTMLElement>('[data-mobile-nav]');
+
+  const closeMenu = () => {
+    document.body.classList.remove('nav-open');
+    menuToggle?.setAttribute('aria-expanded', 'false');
+    menuToggle?.setAttribute('aria-label', '打开菜单');
+  };
+
+  menuToggle?.addEventListener('click', () => {
+    const isOpen = document.body.classList.toggle('nav-open');
+    menuToggle.setAttribute('aria-expanded', String(isOpen));
+    menuToggle.setAttribute('aria-label', isOpen ? '关闭菜单' : '打开菜单');
+  });
+
+  mobileNav?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeMenu();
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 880) closeMenu();
+  });
+</script>

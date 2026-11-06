@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { formatDate, getPublishedPosts } from '../lib/posts';
+import { withBase } from '../lib/url';
+
+const posts = await getPublishedPosts();
+const grouped = new Map<number, typeof posts>();
+
+for (const post of posts) {
+  const year = post.data.date.getUTCFullYear();
+  const list = grouped.get(year) ?? [];
+  list.push(post);
+  grouped.set(year, list);
+}
+
+const years = [...grouped.entries()].sort((a, b) => b[0] - a[0]);
+---
+
+<BaseLayout title="归档" description="按年份浏览全部文章归档。">
+  <header class="page-head">
+    <div class="shell page-head__inner">
+      <p class="eyebrow">
+        <span class="status-dot"></span>
+        ARCHIVE // BY YEAR
+      </p>
+      <h1>归档</h1>
+      <p class="page-head__desc">所有文章按年份排列。时间是最诚实的编辑器，它留下真正重要的东西。</p>
+      <div class="page-head__meta">
+        <span><b>{posts.length}</b> 篇文章</span>
+        <span>{years.length} 个年份</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="archive">
+    <div class="shell">
+      {
+        years.map(([year, list]) => (
+          <div class="archive__year">
+            <h2>
+              {year}
+              <span>{list.length} ENTRIES</span>
+            </h2>
+            <ul class="archive__list">
+              {list.map((post) => (
+                <li class="archive__item">
+                  <a href={withBase(`/blog/${post.id}/`)}>
+                    <span class="archive__date">{formatDate(post.data.date)}</span>
+                    <span class="archive__title">{post.data.title}</span>
+                    <span class="archive__tags">{post.data.tags.map((tag) => `#${tag}`).join(' ')}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>

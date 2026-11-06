@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { collectTags, getPublishedPosts } from '../../lib/posts';
+import { withBase } from '../../lib/url';
+
+const posts = await getPublishedPosts();
+const tags = collectTags(posts);
+---
+
+<BaseLayout
+  title="文章"
+  description="全部文章：学习与科研笔记、编程技术、摄影影像与社会观察。按时间倒序排列。"
+>
+  <header class="page-head">
+    <div class="shell page-head__inner">
+      <p class="eyebrow">
+        <span class="status-dot"></span>
+        TRANSMISSIONS // ALL ENTRIES
+      </p>
+      <h1>文章</h1>
+      <p class="page-head__desc">
+        学习笔记、技术记录、影像手记与社会观察。按发布时间倒序排列，也可以从标签进入某个主题。
+      </p>
+      <div class="page-head__meta">
+        <span><b>{posts.length}</b> 篇文章</span>
+        <span><b>{tags.length}</b> 个标签</span>
+        <a href={withBase('/search/')}>搜索全部内容 →</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="blog-page">
+    <div class="shell">
+      {
+        tags.length > 0 && (
+          <div class="filter-bar" aria-label="标签索引">
+            <span class="filter-bar__label">INDEX //</span>
+            {tags.map((tag) => (
+              <a class="tag" href={withBase(`/tags/${encodeURIComponent(tag.name)}/`)}>
+                <span aria-hidden="true">#</span>
+                {tag.name}
+                <span class="tag__count">{tag.count}</span>
+              </a>
+            ))}
+          </div>
+        )
+      }
+
+      <div class="post-grid">
+        {posts.map((post, index) => <PostCard post={post} index={index + 1} large={index === 0} />)}
+      </div>
+    </div>
+  </section>
+</BaseLayout>

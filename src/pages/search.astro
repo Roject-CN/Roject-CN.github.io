@@ -1,0 +1,184 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { withBase } from '../lib/url';
+---
+
+<BaseLayout title="搜索" description="搜索这个博客的全部文章：标题、摘要、标签与正文。" noindex>
+  <header class="page-head">
+    <div class="shell page-head__inner">
+      <p class="eyebrow">
+        <span class="status-dot"></span>
+        RETRIEVAL // FULL TEXT
+      </p>
+      <h1>搜索</h1>
+      <p class="page-head__desc">在全部文章里检索关键词。索引在构建时生成，不依赖任何第三方搜索服务。</p>
+    </div>
+  </header>
+
+  <section class="search">
+    <div class="shell">
+      <div class="search-box">
+        <input
+          type="search"
+          data-search-input
+          data-index={withBase('/search.json')}
+          placeholder="输入关键词，例如：笔记 / Astro / 摄影 / 注意力"
+          aria-label="搜索文章"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <kbd>/</kbd>
+      </div>
+      <p class="search-hint">支持标题、摘要、标签与正文检索 · 按 Esc 清空 · 按 / 快速聚焦</p>
+      <p class="search-count" data-search-count>正在加载索引…</p>
+      <ul class="search-results" data-search-results></ul>
+      <p class="search-empty" data-search-empty hidden>没有找到匹配的内容，换一个关键词试试。</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  interface SearchItem {
+    title: string;
+    description: string;
+    tags: string[];
+    date: string;
+    url: string;
+    text: string;
+  }
+
+  const input = document.querySelector<HTMLInputElement>('[data-search-input]');
+  const list = document.querySelector<HTMLElement>('[data-search-results]');
+  const countEl = document.querySelector<HTMLElement>('[data-search-count]');
+  const emptyEl = document.querySelector<HTMLElement>('[data-search-empty]');
+
+  let items: SearchItem[] = [];
+
+  const highlight = (text: string, query: string): DocumentFragment => {
+    const fragment = document.createDocumentFragment();
+    if (!query) {
+      fragment.append(text);
+      return fragment;
+    }
+
+    const haystack = text.toLowerCase();
+    const needle = query.toLowerCase();
+    let cursor = 0;
+
+    while (cursor < text.length) {
+      const found = haystack.indexOf(needle, cursor);
+      if (found === -1) {
+        fragment.append(text.slice(cursor));
+        break;
+      }
+      if (found > cursor) fragment.append(text.slice(cursor, found));
+      const mark = document.createElement('mark');
+      mark.textContent = text.slice(found, found + query.length);
+      fragment.append(mark);
+      cursor = found + query.length;
+    }
+
+    return fragment;
+  };
+
+  const render = (results: SearchItem[], query: string) => {
+    if (!list) return;
+    list.replaceChildren(
+      ...results.map((item) => {
+        const li = document.createElement('li');
+        li.className = 'search-result';
+
+        const link = document.createElement('a');
+        link.href = item.url;
+
+        const title = document.createElement('h3');
+        title.append(highlight(item.title, query));
+
+        const desc = document.createElement('p');
+        desc.append(highlight(item.description, query));
+
+        const meta = document.createElement('div');
+        meta.className = 'search-result__meta';
+
+        const date = document.createElement('span');
+        date.textContent = item.date;
+
+        const tags = document.createElement('span');
+        tags.textContent = item.tags.map((tag) => `#${tag}`).join('  ');
+
+        meta.append(date, tags);
+        link.append(title, desc, meta);
+        li.append(link);
+        return li;
+      }),
+    );
+  };
+
+  const run = (raw: string) => {
+    const query = raw.trim();
+    const lower = query.toLowerCase();
+    const results = query
+      ? items.filter((item) =>
+          `${item.title} ${item.description} ${item.tags.join(' ')} ${item.text}`.toLowerCase().includes(lower),
+        )
+      : items.slice(0, 8);
+
+    render(results, query);
+
+    if (countEl) {
+      countEl.textContent = query
+        ? `找到 ${results.length} 条结果`
+        : `${items.length} 篇文章已索引 · 显示最近 ${results.length} 篇`;
+    }
+
+    if (emptyEl) emptyEl.hidden = results.length > 0;
+  };
+
+  const syncUrl = (query: string) => {
+    const url = new URL(window.location.href);
+    if (query) url.searchParams.set('q', query);
+    else url.searchParams.delete('q');
+    window.history.replaceState({}, '', url);
+  };
+
+  input?.addEventListener('input', () => {
+    run(input.value);
+    syncUrl(input.value.trim());
+  });
+
+  input?.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      input.value = '';
+      run('');
+      syncUrl('');
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const target = event.target as HTMLElement | null;
+    const typing = target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
+    if (event.key === '/' && !typing) {
+      event.preventDefault();
+      input?.focus();
+    }
+  });
+
+  const initial = new URLSearchParams(window.location.search).get('q') ?? '';
+  if (input) input.value = initial;
+
+  const indexUrl = input?.dataset.index;
+  if (indexUrl) {
+    fetch(indexUrl)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json() as Promise<SearchItem[]>;
+      })
+      .then((data) => {
+        items = data;
+        run(input?.value ?? '');
+      })
+      .catch(() => {
+        if (countEl) countEl.textContent = '索引加载失败，请刷新页面重试。';
+      });
+  }
+</script>

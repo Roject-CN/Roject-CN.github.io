@@ -1,0 +1,93 @@
+---
+const ticks = Array.from({ length: 36 }, (_, i) => {
+  const angle = (i * 10 * Math.PI) / 180;
+  const inner = i % 6 === 0 ? 222 : 230;
+  return {
+    x1: 280 + Math.cos(angle) * inner,
+    y1: 280 + Math.sin(angle) * inner,
+    x2: 280 + Math.cos(angle) * 236,
+    y2: 280 + Math.sin(angle) * 236,
+    strong: i % 6 === 0,
+  };
+});
+---
+
+<div class="core" aria-hidden="true">
+  <span class="core__corner core__corner--tl"></span>
+  <span class="core__corner core__corner--tr"></span>
+  <span class="core__corner core__corner--bl"></span>
+  <span class="core__corner core__corner--br"></span>
+
+  <span class="core__label core__label--tl"><span>PERSONAL</span><b>ARCHIVE</b></span>
+  <span class="core__label core__label--tr core__label--acid"><span>SYNC RATE</span><b>98.7%</b></span>
+  <span class="core__label core__label--bl"><span>PATTERN</span><b>BLUE</b></span>
+  <span class="core__label core__label--br"><span>STATUS</span><b><i class="status-dot"></i> ONLINE</b></span>
+
+  <svg class="core__svg" viewBox="0 0 560 560" role="presentation" focusable="false">
+    <defs>
+      <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="var(--violet-bright)" stop-opacity="0.5"></stop>
+        <stop offset="52%" stop-color="var(--violet)" stop-opacity="0.13"></stop>
+        <stop offset="100%" stop-color="var(--violet)" stop-opacity="0"></stop>
+      </radialGradient>
+      <linearGradient id="coreStroke" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--violet-bright)"></stop>
+        <stop offset="58%" stop-color="var(--violet)"></stop>
+        <stop offset="100%" stop-color="var(--acid)"></stop>
+      </linearGradient>
+    </defs>
+
+    <circle cx="280" cy="280" r="252" fill="url(#coreGlow)"></circle>
+
+    <g class="core__rotate">
+      <circle cx="280" cy="280" r="240" fill="none" stroke="var(--line-strong)" stroke-width="1" stroke-dasharray="2 9"></circle>
+      <circle cx="280" cy="280" r="220" fill="none" stroke="url(#coreStroke)" stroke-width="1.5" stroke-dasharray="96 20 4 20"></circle>
+      <circle cx="280" cy="280" r="220" fill="none" stroke="var(--acid)" stroke-width="3" stroke-dasharray="1 120" opacity="0.85"></circle>
+    </g>
+
+    <g class="core__rotate core__rotate--reverse">
+      <circle cx="280" cy="280" r="190" fill="none" stroke="var(--violet)" stroke-width="1" stroke-dasharray="34 14" opacity="0.75"></circle>
+      <circle cx="280" cy="280" r="176" fill="none" stroke="var(--line)" stroke-width="1"></circle>
+    </g>
+
+    <g class="core__ticks">
+      {
+        ticks.map((tick) => (
+          <line
+            x1={tick.x1}
+            y1={tick.y1}
+            x2={tick.x2}
+            y2={tick.y2}
+            stroke={tick.strong ? 'var(--acid)' : 'var(--line-strong)'}
+            stroke-width={tick.strong ? 1.6 : 1}
+            opacity={tick.strong ? 0.9 : 0.55}
+          />
+        ))
+      }
+    </g>
+
+    <polygon
+      points="280,164 380,222 380,338 280,396 180,338 180,222"
+      fill="none"
+      stroke="var(--violet-bright)"
+      stroke-width="1.2"
+      opacity="0.55"
+    ></polygon>
+    <polygon
+      points="280,196 348,236 348,324 280,364 212,324 212,236"
+      fill="var(--bg-elev)"
+      fill-opacity="0.35"
+      stroke="var(--line-strong)"
+      stroke-width="1"
+    ></polygon>
+
+    <path d="M280 44v52M280 464v52M44 280h52M464 280h52" stroke="var(--text-dim)" stroke-width="1" opacity="0.7"></path>
+
+    <circle cx="280" cy="280" r="118" fill="url(#coreGlow)" stroke="var(--acid)" stroke-width="1" opacity="0.9"></circle>
+    <circle class="core__pulse" cx="280" cy="280" r="132" fill="none" stroke="var(--acid)" stroke-width="1" opacity="0.35"></circle>
+
+    <text x="280" y="312" text-anchor="middle" class="core__num">01</text>
+  </svg>
+
+  <div class="core__scan"></div>
+</div>
